@@ -33,6 +33,8 @@ gener = st.sidebar.multiselect(
 
 year = st.sidebar.slider('Select Year',df['year'].min(),df['year'].max())
 
+st.title('NETFLIX MOVIE ANALYSIS')
+
 col1, col2 = st.columns([0.3,0.7])
 
 with col1:
@@ -40,8 +42,18 @@ with col1:
     st.plotly_chart(fig)
     
 with col2: 
-    fig = px.line(df.head(20),y='date_added',x='popularity')
+    fig = px.line(df,x='year',y='popularity')
     st.plotly_chart(fig) 
+
+col3,col4 = st.columns([5,5])
+
+with col3:
+    fig = px.scatter(df, x = 'budget', y='revenue',hover_data='title')
+    st.plotly_chart(fig)
+    
+with col4:
+    fig = px.bar(df.head(10), x= 'country', y=['revenue','vote_average'])
+    st.plotly_chart(fig)
 
 # px.histogram(data=df.head(20),x='revenue',y='title')
 st.write(df)
