@@ -3,17 +3,16 @@ import plotly.express as px
 import pandas as pd
 import joblib
 
-countries_list = joblib.load('countries_list.plk')
 unique_actors = joblib.load('unique_actors.plk') 
-geners = joblib.load('gener_list.plk')
+gener_df = joblib.load('gener_df.plk')
+country_df = joblib.load('country_df.plk')
 
 df = pd.read_csv('cleaned.csv')
 
 
-
 country = st.sidebar.multiselect(
     'Select the country',
-    options=countries_list
+    options=country_df['country'].unique()
 )
 
 director = st.sidebar.multiselect(
@@ -28,32 +27,54 @@ actors = st.sidebar.multiselect(
 
 gener = st.sidebar.multiselect(
     'Select Gener',
-    options=geners
+    options=gener_df['genres'].unique()
 )
 
-year = st.sidebar.slider('Select Year',df['year'].min(),df['year'].max())
+year = st.sidebar.date_input('Select Year Start Year',min_value=df['date_added'].min(),max_value=df['date_added'].max(),)
+year = st.sidebar.date_input('Select Year End Year',min_value=df['date_added'].min(),max_value=df['date_added'].max())
 
 st.title('NETFLIX MOVIE ANALYSIS')
 
-col1, col2 = st.columns([0.3,0.7])
+tab1,tab2,tab3 = st.tabs(['Revenue','Popularity','Rating'])
 
-with col1:
-    fig = px.bar(df.head(20),x='revenue',y='title')
-    st.plotly_chart(fig)
+with tab1 :
+    col1, col2,col3 = st.columns(3)
+    with col1:
+        fig = px.bar(df.head(20),y='revenue',x='title')
+        st.plotly_chart(fig)
+        
+    with col2: 
+        fig = px.line(df,x='year',y='revenue')
+        st.plotly_chart(fig) 
+
+
+    with col3:
+        fig = px.scatter(df, x = 'budget', y='revenue',hover_data='title')
+        st.plotly_chart(fig)
+      
+    col4,col5,col6 = st.columns(3)  
     
-with col2: 
-    fig = px.line(df,x='year',y='popularity')
-    st.plotly_chart(fig) 
+    with col4:
+        new_df = country_df.groupby('country')['revenue'].sum().reset_index()
+        
+        fig = px.bar(new_df.sort_values(by='revenue').head(20),y='country',x='revenue')
+        st.plotly_chart(fig)
 
-col3,col4 = st.columns([5,5])
+   
 
-with col3:
-    fig = px.scatter(df, x = 'budget', y='revenue',hover_data='title')
-    st.plotly_chart(fig)
+    with col5:
+        new_df = gener_df.groupby('genres')['rating'].sum().reset_index()
+        # st.write(new_df)
+        
+        fig = px.pie(new_df,names='genres',values='rating')
+        st.plotly_chart(fig)
     
-with col4:
-    fig = px.bar(df.head(10), x= 'country', y=['revenue','vote_average'])
-    st.plotly_chart(fig)
+with tab2:    
+    with col6: 
+        fig = px.line(country_df,x='year',y='popularity',labels='country')
+        st.plotly_chart(fig)
+        
+
 
 # px.histogram(data=df.head(20),x='revenue',y='title')
 st.write(df)
