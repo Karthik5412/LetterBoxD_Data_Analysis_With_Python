@@ -13,8 +13,8 @@ date_df = df.copy()
 date_df['date_added'] = pd.to_datetime(df['date_added']).dt.strftime('%Y-%m')  #('%Y-%Q%q')
 
 
-st.title('HOLLYWOOD MOVIES ANALYSIS FROM 2K10 TO 2025')
-st.set_page_config(page_title='Netflix Data Analysis',layout='wide',initial_sidebar_state='collapsed')
+st.title('LETTERBOXD MOVIES ANALYSIS FROM 2K10 TO 2k25')
+st.set_page_config(page_title='Movie Data Analysis',layout='wide',initial_sidebar_state='collapsed')
 
 letterboxd_palette = [
     '#FF8000', '#00E054', '#40BCF4', '#EE3424', '#99AABB', 
@@ -108,13 +108,57 @@ with tab1 :
     
     with col5: 
         
-        fig = px.pie(gener_df,names='genres',values='revenue',
+        fig = px.pie(gener_df,names='genres',values='revenue',hole=0.7,
                     color_discrete_sequence=letterboxd_palette)
         st.plotly_chart(fig)
         
         
 with tab2:    
-        pass
+        col1,col2 = st.columns(2)
+        
+        with col1:
+            new_df = date_df.groupby('date_added')['popularity'].mean().reset_index()
+            
+            fig = px.area(new_df,x = 'date_added',y = 'popularity')
+            st.plotly_chart(fig)
+            
+        with col2 :
+            new_df = gener_df.groupby('genres')['popularity'].mean().reset_index()
+            new_df = new_df.nlargest(10,'popularity').reset_index()
+            
+            fig = px.pie(new_df,names='genres',values='popularity',hole=0.7,color_discrete_sequence=letterboxd_palette)
+            
+            st.plotly_chart(fig)
+            
+        new_df = date_df['date_added'].value_counts().reset_index()
+        new_df = new_df.sort_values(by='date_added').reset_index()
+        
+        fig = px.bar(new_df,x='date_added',y='count',color_discrete_sequence=letterboxd_palette[6:])
+        st.plotly_chart(fig)
+        
+        col4,col5 = st.columns([5,5])
+        
+        with col4 :
+            
+            fig = px.histogram(df,x='rating', y= 'popularity', nbins=100, color_discrete_sequence=letterboxd_palette[3:])
+            st.plotly_chart(fig)
+            
+        with col5 :
+            
+            gener_df_year = gener_df.copy()
+            gener_df_year['date_added'] = pd.to_datetime(gener_df_year['date_added']).dt.strftime('%Y')
+            new_df = gener_df.groupby(['date_added','genres'])['popularity'].mean().reset_index()
+             
+            fig = px.scatter(new_df,x='date_added',y='popularity',
+                             color='genres',size='popularity',
+                             color_discrete_sequence=letterboxd_palette)
+            
+            st.plotly_chart(fig)
+            
+            
+            
+            
+            
 
 
 
