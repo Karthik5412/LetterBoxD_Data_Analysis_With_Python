@@ -155,6 +155,36 @@ with tab2:
             
             st.plotly_chart(fig)
             
+with tab3:
+    
+    col1,col2 = st.columns(2)
+    
+    with col1 :
+        new_df = gener_df.groupby('genres')['rating'].mean().reset_index()
+        fig = px.treemap(new_df,names='genres',values='rating',color='rating',)
+        
+        st.write(new_df)
+        st.plotly_chart(fig)
+        
+    with col2:
+        
+        fig = px.histogram(df,x='date_added',y='rating',marginal='violin')
+        
+        st.plotly_chart(fig)
+        
+    col3,col4 = st.columns([0.5,0.5])
+    
+    with col3:
+        fig1 = px.bar(df.nlargest(50,'rating') ,x='title',y='rating',color_discrete_sequence=letterboxd_palette[3:])
+        st.plotly_chart(fig1)
+        
+    with col4:
+        fig2 = px.bar(df.nlargest(50,'revenue'),x='title',y='revenue',color_discrete_sequence=letterboxd_palette[2:])
+        st.plotly_chart(fig2)
+        
+
+    
+            
             
             
             
