@@ -21,8 +21,34 @@ letterboxd_palette = [
     "#8E44AD", "#C0392B", "#16A085", "#D35400", "#2980B9"
 ]
 
-
+def filter (country =None,director =None, 
+            actors = None,genres = None,
+            start_date = None,end_date = None ):
+    new_df = df.copy()
     
+    if country :
+        new_df = new_df[new_df['country'].isin(country)]
+        
+    if director:
+        new_df = new_df[new_df['director'].isin(director)]
+    
+    if genre :
+        new_df = new_df[new_df['genres'].isin(genre)]
+        
+    if actors:
+        
+        new_df= new_df[new_df['cast'].isin(actors)]
+        
+        
+    if start_date or end_date :
+        s = start_date if start_date else new_df['year'].min()
+        e = end_date if end_date else new_df['year'].max()
+        
+        new_df = new_df[(new_df['year'] >= s) & (new_df['year'] <= e)]
+    
+    
+    
+    return new_df
 
 countries = st.sidebar.multiselect(
     'Select the country',
@@ -39,19 +65,19 @@ actors = st.sidebar.multiselect(
     options=unique_actors,
 )
 
-gener = st.sidebar.multiselect(
+genre = st.sidebar.multiselect(
     'Select Gener',
     options=df['genres'].unique()
 )
 
-start_year = st.sidebar.date_input('Select Year Start Year',min_value=df['date_added'].min(),max_value=df['date_added'].max(),)
-end_year = st.sidebar.date_input('Select Year End Year',min_value=df['date_added'].min(),max_value=df['date_added'].max())
+start_year = st.sidebar.slider('Select Year Start Year',df['year'].min(),df['year'].max() - 1,df['year'].min() )
+end_year = st.sidebar.slider('Select Year End Year',df['year'].min() +1 ,df['year'].max(),df['year'].max() )
 
-if countries or director  or actors:
-    condition = 'country in @countries or director in @director or genres in @gener'
-    df = df.query(
-        condition
-    )
+if countries or director  or actors or genre or start_year or end_year  :
+    df = filter(country = countries, director= director,  
+           actors= actors,genres= genre, start_date = start_year,end_date= end_year)
+    df= df.drop_duplicates(subset='title')
+    
 
 le_col,cen_col,rt_col = st.columns(3)
 
@@ -110,6 +136,7 @@ with tab1 :
     col4,col5 = st.columns(2)  
 
     with col4:
+        
         new_df = df.nlargest(20,'revenue').reset_index()
         
         fig = px.bar(new_df,y='title',x=['revenue','budget'],orientation='h',
@@ -219,9 +246,13 @@ with tab3:
     st.plotly_chart(fig,use_container_width=True,width='constent',height='stretch')
     
         
+        
     
 
     
+            
+            
+            
             
             
             
